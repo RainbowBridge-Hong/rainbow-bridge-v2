@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1890ff">
+<title>彩虹桥企业版</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.svg">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#1890ff;--success:#52c41a;--warning:#faad14;--danger:#ff4d4f;--bg:#f5f7fa}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:#333;height:100vh;overflow:hidden}
+/* Login */
+#login{position:fixed;inset:0;background:linear-gradient(135deg,#1890ff,#52c41a);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;transition:opacity .3s}
+#login.hide{opacity:0;pointer-events:none}
+.logo{font-size:64px;margin-bottom:16px}
+.title{font-size:28px;font-weight:700;color:#fff;margin-bottom:8px}
+.subtitle{font-size:14px;color:rgba(255,255,255,.8);margin-bottom:32px}
+.form{width:100%;max-width:320px}
+.tabs{display:flex;background:rgba(255,255,255,.2);border-radius:24px;padding:4px;margin-bottom:16px}
+.tab{flex:1;padding:10px;border:none;background:transparent;color:rgba(255,255,255,.9);font-size:14px;font-weight:500;cursor:pointer;border-radius:20px}
+.tab.active{background:#fff;color:#1890ff}
+.form-panel{display:none}
+.form-panel.active{display:block}
+.input{width:100%;padding:14px 16px;border:none;border-radius:12px;font-size:15px;margin-bottom:12px;background:rgba(255,255,255,.95)}
+.btn{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;background:#fff;color:#1890ff;box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.btn:active{transform:scale(.98)}
+/* App */
+#app{display:none;height:100vh;flex-direction:column}
+#app.show{display:flex}
+/* Header */
+.header{height:56px;background:var(--primary);display:flex;align-items:center;padding:0 16px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.back{width:40px;height:40px;border:none;background:rgba(255,255,255,.2);border-radius:50%;color:#fff;font-size:20px;cursor:pointer}
+.header-title{flex:1;text-align:center;font-size:18px;font-weight:600;color:#fff}
+/* Main */
+.main{flex:1;overflow-y:auto;overflow-x:hidden}
+/* Tab Bar */
+.tabbar{height:64px;background:#fff;border-top:1px solid #eee;display:flex;box-shadow:0 -2px 8px rgba(0,0,0,.05)}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px;border:none;background:transparent;cursor:pointer;color:#999;font-size:10px}
+.tab-item.active{color:var(--primary)}
+.tab-icon{font-size:24px}
+/* Pages */
+.page{display:none;padding:16px}
+.page.active{display:block}
+/* Home */
+.home-header{background:linear-gradient(135deg,#1890ff,#52c41a);padding:24px 16px;border-radius:0 0 24px 24px;margin:-16px -16px 16px}
+.greeting{font-size:14px;color:rgba(255,255,255,.8)}
+.username{font-size:24px;font-weight:700;color:#fff;margin-top:4px}
+.quick-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.quick-btn{padding:16px 8px;border:none;border-radius:12px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);cursor:pointer;text-align:center}
+.quick-icon{font-size:28px;margin-bottom:4px}
+.quick-label{font-size:11px;color:#666}
+/* Cards */
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.card-title{font-size:14px;font-weight:600;margin-bottom:12px}
+/* Chat */
+.chat-item{display:flex;align-items:center;padding:12px;border-bottom:1px solid #eee;cursor:pointer}
+.chat-avatar{width:48px;height:48px;border-radius:50%;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:24px;margin-right:12px}
+.chat-info{flex:1}
+.chat-name{font-size:15px;font-weight:500}
+.chat-msg{font-size:13px;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-time{font-size:12px;color:#999}
+.chat-badge{min-width:20px;height:20px;border-radius:10px;background:var(--danger);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;padding:0 6px}
+/* Chat Detail */
+.chat-header{display:flex;align-items:center;gap:8px}
+.chat-messages{flex:1;overflow-y:auto;padding:16px}
+.msg{margin-bottom:12px;max-width:80%}
+.msg.mine{margin-left:auto;text-align:right}
+.msg-bubble{padding:10px 14px;border-radius:16px;font-size:14px;line-height:1.5;display:inline-block;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.1)}
+.msg.mine .msg-bubble{background:var(--primary);color:#fff}
+.chat-input{padding:12px;background:#fff;border-top:1px solid #eee;display:flex;gap:8px}
+.chat-input input{flex:1;padding:10px 14px;border:1px solid #eee;border-radius:20px;font-size:14px;outline:none}
+.send-btn{width:44px;height:44px;border:none;border-radius:50%;background:var(--primary);color:#fff;font-size:18px;cursor:pointer}
+/* Contacts */
+.contact-group{background:#fff;border-radius:12px;margin-bottom:8px;overflow:hidden}
+.contact-header{padding:12px 16px;font-weight:600;cursor:pointer}
+.contact-list{display:none;padding:0 16px 8px}
+.contact-item{display:flex;align-items:center;padding:8px 0;cursor:pointer}
+.contact-avatar{width:40px;height:40px;border-radius:50%;background:#e3f2fd;margin-right:12px;display:flex;align-items:center;justify-content:center}
+.contact-name{flex:1;font-size:14px}
+.contact-status{width:8px;height:8px;border-radius:50%;background:var(--success)}
+/* Tasks */
+.task-item{display:flex;align-items:center;padding:12px;border-bottom:1px solid #eee}
+.task-check{width:24px;height:24px;border:2px solid #ddd;border-radius:50%;margin-right:12px;cursor:pointer}
+.task-check.done{background:var(--success);border-color:var(--success);color:#fff;text-align:center;line-height:20px}
+.task-content{flex:1}
+.task-title{font-size:14px}
+.task-meta{font-size:12px;color:#999;margin-top:2px}
+.task-priority{font-size:10px;padding:2px 8px;border-radius:10px;color:#fff}
+/* Finance */
+.finance-card{background:linear-gradient(135deg,#1890ff,#52c41a);padding:20px;border-radius:16px;color:#fff;margin-bottom:16px}
+.finance-balance{font-size:32px;font-weight:700}
+.finance-stats{display:flex;gap:24px;margin-top:12px}
+.finance-item{text-align:center}
+.finance-label{font-size:12px;opacity:.8}
+.finance-value{font-size:18px;font-weight:600}
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.grid-item{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:32px}
+/* Profile */
+.profile-header{background:linear-gradient(135deg,#1890ff,#52c41a);padding:32px 16px;border-radius:0 0 24px 24px;margin:-16px -16px 16px;text-align:center}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.3);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:40px;border:3px solid rgba(255,255,255,.5)}
+.profile-name{font-size:24px;font-weight:700;color:#fff}
+.profile-role{font-size:14px;color:rgba(255,255,255,.8);margin-top:4px}
+.profile-stats{display:flex;justify-content:center;gap:32px;margin-top:16px}
+.profile-stat{text-align:center}
+.profile-stat-value{font-size:24px;font-weight:700;color:#fff}
+.profile-stat-label{font-size:12px;color:rgba(255,255,255,.7)}
+.menu-item{display:flex;align-items:center;padding:14px 16px;border-bottom:1px solid #eee;cursor:pointer}
+.menu-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-right:12px}
+.menu-label{flex:1;font-size:15px}
+.menu-arrow{color:#999}
+/* Utils */
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<!-- Login -->
+<div id="login">
+  <div class="logo">🌈</div>
+  <div class="title">彩虹桥企业版</div>
+  <div class="subtitle">连接企业，协作无界</div>
+  <div class="form">
+    <div class="tabs">
+      <button class="tab active" onclick="app.switchTab('login')">登录</button>
+      <button class="tab" onclick="app.switchTab('register')">注册</button>
+    </div>
+    <div id="loginPanel" class="form-panel active">
+      <input class="input" id="loginUser" placeholder="用户名/手机号">
+      <input class="input" id="loginPwd" type="password" placeholder="密码">
+      <button class="btn" onclick="app.login()">登录</button>
+    </div>
+    <div id="registerPanel" class="form-panel">
+      <input class="input" id="regUser" placeholder="用户名">
+      <input class="input" id="regPhone" placeholder="手机号">
+      <input class="input" id="regPwd" type="password" placeholder="密码">
+      <button class="btn" onclick="app.register()">注册</button>
+    </div>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <!-- Home Page -->
+  <div id="homePage" class="page active">
+    <div class="home-header">
+      <div class="greeting">早上好</div>
+      <div class="username" id="homeUsername">用户</div>
+    </div>
+    <div class="quick-actions">
+      <button class="quick-btn" onclick="app.goto('chat')"><div class="quick-icon">💬</div><div class="quick-label">聊天</div></button>
+      <button class="quick-btn" onclick="app.goto('contacts')"><div class="quick-icon">👥</div><div class="quick-label">通讯录</div></button>
+      <button class="quick-btn" onclick="app.goto('tasks')"><div class="quick-icon">📋</div><div class="quick-label">任务</div></button>
+      <button class="quick-btn" onclick="app.goto('finance')"><div class="quick-icon">💰</div><div class="quick-label">财务</div></button>
+      <button class="quick-btn" onclick="app.goto('meetings')"><div class="quick-icon">📅</div><div class="quick-label">会议</div></button>
+      <button class="quick-btn" onclick="app.goto('album')"><div class="quick-icon">🖼</div><div class="quick-label">相册</div></button>
+      <button class="quick-btn" onclick="app.goto('org')"><div class="quick-icon">🏢</div><div class="quick-label">组织</div></button>
+      <button class="quick-btn" onclick="app.goto('weather')"><div class="quick-icon">🌤</div><div class="quick-label">天气</div></button>
+    </div>
+    <div class="card">
+      <div class="card-title">待办任务</div>
+      <div id="homeTasks"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">最近聊天</div>
+      <div id="homeChats"></div>
+    </div>
+  </div>
+
+  <!-- Chat List -->
+  <div id="chatPage" class="page">
+    <div id="chatList"></div>
+  </div>
+
+  <!-- Chat Detail -->
+  <div id="chatDetailPage" class="page" style="display:none;flex-direction:column">
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input">
+      <button onclick="app.sendImage()">📷</button>
+      <input id="msgInput" placeholder="输入消息...">
+      <button class="send-btn" onclick="app.sendMsg()">➤</button>
+    </div>
+  </div>
+
+  <!-- Contacts -->
+  <div id="contactsPage" class="page">
+    <div id="contactsList"></div>
+  </div>
+
+  <!-- Tasks -->
+  <div id="tasksPage" class="page">
+    <div class="card">
+      <div class="card-title">我的任务</div>
+      <div id="tasksList"></div>
+    </div>
+    <button class="btn" onclick="app.addTask()" style="margin-top:12px;background:var(--primary);color:#fff">+ 新建任务</button>
+  </div>
+
+  <!-- Finance -->
+  <div id="financePage" class="page">
+    <div class="finance-card">
+      <div style="font-size:14px;opacity:.8">总资产</div>
+      <div class="finance-balance" id="financeBalance">¥0.00</div>
+      <div class="finance-stats">
+        <div class="finance-item"><div class="finance-label">本月收入</div><div class="finance-value" id="financeIn">+¥0</div></div>
+        <div class="finance-item"><div class="finance-label">本月支出</div><div class="finance-value" id="financeOut">-¥0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">收支记录</div>
+      <div id="financeList"></div>
+    </div>
+    <button class="btn" onclick="app.addFinance()" style="margin-top:12px;background:var(--primary);color:#fff">+ 记一笔</button>
+  </div>
+
+  <!-- Meetings -->
+  <div id="meetingsPage" class="page">
+    <div id="meetingsList"></div>
+    <button class="btn" onclick="app.addMeeting()" style="margin-top:12px;background:var(--primary);color:#fff">+ 新建会议</button>
+  </div>
+
+  <!-- Album -->
+  <div id="albumPage" class="page">
+    <div class="grid" id="albumGrid"></div>
+  </div>
+
+  <!-- Org -->
+  <div id="orgPage" class="page">
+    <div id="orgTree"></div>
+  </div>
+
+  <!-- Weather -->
+  <div id="weatherPage" class="page">
+    <div class="card" style="text-align:center;padding:32px">
+      <div style="font-size:64px" id="weatherIcon">🌤</div>
+      <div style="font-size:48px;font-weight:700;margin:12px 0" id="weatherTemp">26°C</div>
+      <div style="font-size:18px;color:#666" id="weatherDesc">晴转多云</div>
+      <div style="display:flex;justify-content:center;gap:24px;margin-top:16px">
+        <div><div style="font-size:12px;color:#999">湿度</div><div id="weatherHum">65%</div></div>
+        <div><div style="font-size:12px;color:#999">风速</div><div id="weatherWind">12km/h</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Profile -->
+  <div id="profilePage" class="page">
+    <div class="profile-header">
+      <div class="profile-avatar">👤</div>
+      <div class="profile-name" id="profileName">用户</div>
+      <div class="profile-role" id="profileRole">成员</div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-value" id="statTasks">0</div><div class="profile-stat-label">任务</div></div>
+        <div class="profile-stat"><div class="profile-stat-value" id="statDone">0</div><div class="profile-stat-label">完成</div></div>
+        <div class="profile-stat"><div class="profile-stat-value" id="statMsg">0</div><div class="profile-stat-label">消息</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="menu-item" onclick="app.goto('tasks')"><div class="menu-icon" style="background:#e3f2fd">📋</div><div class="menu-label">我的任务</div><div class="menu-arrow">›</div></div>
+      <div class="menu-item" onclick="app.goto('finance')"><div class="menu-icon" style="background:#e8f5e9">💰</div><div class="menu-label">财务记录</div><div class="menu-arrow">›</div></div>
+      <div class="menu-item"><div class="menu-icon" style="background:#fff3e0">⚙️</div><div class="menu-label">设置</div><div class="menu-arrow">›</div></div>
+      <div class="menu-item" onclick="app.logout()"><div class="menu-icon" style="background:#ffebee">🚪</div><div class="menu-label" style="color:var(--danger)">退出登录</div><div class="menu-arrow">›</div></div>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tabbar">
+    <button class="tab-item active" onclick="app.goto('home')"><span class="tab-icon">🏠</span><span>首页</span></button>
+    <button class="tab-item" onclick="app.goto('chat')"><span class="tab-icon">💬</span><span>消息</span><span class="tab-badge hidden" id="msgBadge">0</span></button>
+    <button class="tab-item" onclick="app.goto('work')"><span class="tab-icon">📊</span><span>工作台</span></button>
+    <button class="tab-item" onclick="app.goto('contacts')"><span class="tab-icon">👥</span><span>通讯录</span></button>
+    <button class="tab-item" onclick="app.goto('profile')"><span class="tab-icon">👤</span><span>我的</span></button>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
